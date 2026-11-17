@@ -1,0 +1,15 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dashboard: active model",
+      "type": "process",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "args": ["-B", "-m", "streamlit", "run", "dashboard/app.py", "--server.address", "127.0.0.1", "--server.port", "8501", "--server.headless", "true"],
+      "options": {"cwd": "${workspaceFolder}", "env": {"PYTHONDONTWRITEBYTECODE": "1", "LOKY_MAX_CPU_COUNT": "1"}},
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {"reveal": "always", "panel": "dedicated"}
+    }
+  ]
+}

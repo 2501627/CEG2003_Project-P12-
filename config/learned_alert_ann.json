@@ -1,0 +1,47 @@
+{
+  "model_id": "learned_alert_ann",
+  "hidden_units": [
+    64,
+    32,
+    16
+  ],
+  "hidden_activations": [
+    "PReLU",
+    "ReLU",
+    "ReLU"
+  ],
+  "output_activation": "sigmoid",
+  "alert_weights": "Positive mean-one weights learned by backpropagation, initialized from training-only Checkpoint4 weights.",
+  "inputs": [
+    "log1p learned weighted alert rate per observed alert day",
+    "log1p observed alert days"
+  ],
+  "class_weighting": "balanced from real training labels",
+  "smote": false,
+  "cutoff_policy": "training-selected",
+  "cutoff": 0.49682047963142395,
+  "full_refit_epochs": 1,
+  "selected_regularization": 0.1,
+  "training_source": "training/train.py",
+  "training_inputs": "data/model_inputs/cohort.npz",
+  "training_plan": "data/model_inputs/training_plan.joblib",
+  "training": {
+    "optimizer": {
+      "lr": 0.001,
+      "alpha": 0.9,
+      "eps": 1e-07,
+      "weight_decay": 0.0,
+      "momentum": 0.0,
+      "centered": false
+    },
+    "regularizations": [
+      0.0,
+      0.01,
+      0.1
+    ],
+    "batch_size": 128,
+    "max_epochs": 100,
+    "seed": 20261117,
+    "minimum_training_recall": 0.55
+  }
+}

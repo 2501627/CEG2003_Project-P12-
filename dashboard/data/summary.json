@@ -1,0 +1,64 @@
+{
+  "model_captains": 1541,
+  "eligible_april_cases": 36,
+  "cleaned_captains": 1544,
+  "cleaned_alert_rows": 3958476,
+  "model_cohort_alert_rows": 3952554,
+  "model_observed_captain_days": 35302,
+  "cleaned_incident_reports_jan_may": 194,
+  "april_source_report_rows": 39,
+  "ambiguous_april_report_captains": 3,
+  "predictor_start": "2024-03-01",
+  "predictor_end": "2024-03-31",
+  "outcome_start": "2024-04-01",
+  "outcome_end": "2024-04-30",
+  "missing_id_alert_rows_excluded": 208700,
+  "unmatched_incident_rows_excluded": 12,
+  "comparison_targets": {
+    "roc_auc": 0.6034883720930232,
+    "accuracy": 0.6647198788665368,
+    "incident_detection_recall": 0.5462962962962963
+  },
+  "model_id": "learned_alert_ann",
+  "model_label": "Learned-alert ANN",
+  "architecture": "64 PReLU \u2192 32 ReLU \u2192 16 ReLU \u2192 1 sigmoid",
+  "hidden_layers": 3,
+  "sigmoid_outputs": 1,
+  "learned_alert_weights": true,
+  "smote": false,
+  "cutoff_policy": "training-selected",
+  "model_cutoff": 0.49682047963142395,
+  "full_fit_model_flags": 548,
+  "validation": {
+    "roc_auc": 0.6006644518272425,
+    "accuracy": 0.6606099935107074,
+    "incident_detection_recall": 0.5277777777777778,
+    "precision": 0.0363312379096018,
+    "balanced_accuracy": 0.59578257659653,
+    "captains_flagged": 525.0,
+    "true_positives": 19.0,
+    "false_positives": 506.0,
+    "true_negatives": 999.0,
+    "false_negatives": 17.0
+  },
+  "validation_repeats": 3,
+  "validation_folds": 5,
+  "uncertainty": {
+    "roc_auc": {
+      "low": 0.502770702596284,
+      "high": 0.6945175033837825
+    },
+    "accuracy": {
+      "low": 0.6387573004542505,
+      "high": 0.681592039800995
+    },
+    "incident_detection_recall": {
+      "low": 0.37962962962962965,
+      "high": 0.6759259259259259
+    }
+  },
+  "uncertainty_definition": "Conditional stratified captain bootstrap preserving three predictions per captain; does not account for repeated model exploration.",
+  "targets_met": false,
+  "score_explanation": "The ANN combines learned weighted alert rate and recorded-day coverage; weights stay fixed until retraining.",
+  "weighted_input_definition": "Learned type weight times original rows per observed alert day, before log transform and ANN."
+}
