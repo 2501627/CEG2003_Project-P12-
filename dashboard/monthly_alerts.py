@@ -9,6 +9,7 @@ def summarize_month(alerts, start, weights):
     month = pl.col("alert_start").dt.date().dt.month_start()
     counts = (alerts.filter(month == start.replace(day=1))
               .group_by("alert_type").agg(pl.len().alias("month_records")).collect().to_pandas())
+    # Keep an alert type visible even when it has a training weight and zero records this month.
     summary = counts.merge(weights[["alert_type", "weight"]], on="alert_type",
                            how="outer", validate="one_to_one")
     summary["month_records"] = summary.month_records.fillna(0).astype("int64")

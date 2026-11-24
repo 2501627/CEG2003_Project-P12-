@@ -24,6 +24,7 @@ def fit_alert_weights(training):
     exposure = training.observed_days.sum()
     if exposure <= 0 or training.duplicated(["captain_id", "alert_week_start"]).any():
         raise ValueError("Expected distinct, observed captain-weeks in the training data.")
+    # Recover counts before pooling so a one-day profile and a seven-day profile contribute per day.
     totals = np.rint(training[base.RATES].multiply(training.observed_days, axis=0).sum()).astype("int64")
     per_day = totals.to_numpy() / exposure
     return pd.DataFrame({"alert_type": base.TYPES, "training_rows": totals.to_numpy(),
@@ -35,6 +36,7 @@ def weighted_inputs(frame, alert_weights):
     weights = np.asarray(alert_weights, dtype=np.float64)
     if weights.shape != (len(base.TYPES),) or not np.all((weights > 0) & (weights <= 1)):
         raise ValueError("Expected one positive multiplier at most one for each known alert type.")
+    # Apply frequency weights to alert volume. Day shares separately capture how often a group appeared.
     discounted = frame[base.DAILY_LOG].to_numpy(dtype=np.float64) * weights
     group_values = [discounted[:, [base.TYPES.index(t) for t in types]].sum(axis=1)
                     for types in base.GROUPS.values()]
@@ -62,6 +64,7 @@ def score_weighted(frame, bundle):
     if bundle["alert_types"] != base.TYPES or bundle["groups"] != base.GROUPS or bundle["features"] != base.FEATURES:
         raise ValueError("Saved alert feature schema differs from scoring schema.")
     values = weighted_inputs(frame, bundle["weights"].numpy())
+    # Use the centre and spread saved at fitting time, even if this week's alert mix has shifted.
     scaled = (values - bundle["weighted_center"].numpy()) / bundle["reference_scale"].numpy()
     network = base.CaptainANN(scaled.shape[1])
     network.load_state_dict(bundle["model_state"])
@@ -98,6 +101,7 @@ def evaluate(history, final):
     splitter = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=base.SEED)
     ledgers = []
     for fold, (fit_index, check_index) in enumerate(splitter.split(people, strata), 1):
+        # A captain may have several earlier profiles. Hold out their entire history when scoring them.
         train_rows = history.loc[history.captain_id.isin(people.iloc[fit_index])]
         check_rows = final.loc[final.captain_id.isin(people.iloc[check_index])]
         if set(train_rows.captain_id).intersection(check_rows.captain_id):
@@ -117,6 +121,7 @@ def run(dest):
     sources = (base.ALERT_FILE, base.REPORT_FILE, Path(__file__), Path(base.__file__))
     hashes = {p.name: base.file_hash(p) for p in sources}
     if dest.exists():
+        # Verify the saved run and recompute its headline ratings from the held-out scores.
         report = json.loads((dest / "results.json").read_text(encoding="utf8"))
         if report.get("source_sha256") != hashes:
             raise ValueError("Inputs or training code have changed. Use --output with a new directory to refit.")
@@ -135,6 +140,7 @@ def run(dest):
     reports = raw.filter(~duplicate & pl.col("has_march_alerts"))
     if reports["report_id"].n_unique() != len(reports) or reports["captain_id"].null_count():
         raise ValueError("Eligible reports must have distinct report IDs and a known captain.")
+    # Both sides are exclusive week ends. Training labels must be available when the review week begins.
     if max(base.TRAIN_STARTS) + 2 * base.WEEK > base.FINAL_START + base.WEEK:
         raise ValueError("Training outcomes must be known before the final prediction week.")
     history = pd.concat([base.weekly_profiles(alerts, reports, start) for start in base.TRAIN_STARTS],
@@ -165,6 +171,7 @@ def run(dest):
     }
     dest.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=dest.parent) as tmp:
+        # Publish the directory only after the model, both score files, weights and checksums are ready.
         stage = Path(tmp) / "run"
         stage.mkdir()
         torch.save(review_bundle, stage / "weighted_ann.pt")

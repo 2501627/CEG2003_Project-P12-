@@ -16,6 +16,8 @@ def roc_points(predictions, fold=None):
         grid = np.unique(np.concatenate([fpr for fpr, _ in curves]))
         heights = []
         for fpr, tpr in curves:
+            # At a repeated false-positive rate, interpolation gives the top of the jump.
+            # The first detection rate at that point supplies the bottom for the plotted line.
             upper = np.interp(grid, fpr, tpr)
             lower = upper.copy()
             knots, first = np.unique(fpr, return_index=True)

@@ -68,6 +68,7 @@ def review_tab(data, alert_week):
         rows = rows.loc[rows.flagged == (scope == "Flagged captains")]
     if query:
         rows = rows.loc[rows.captain_id.astype(str).str.contains(query, regex=False)]
+    # Streamlit returns positions in the filtered table. A new filter needs its own row selection.
     queue_key = f"review_rows_{scope}_{query}"
     row = show_queue(rows, queue_key, data.report["cutoff"])
     flagged = data.queue.loc[data.queue.flagged].set_index("captain_id", drop=False)
@@ -131,6 +132,7 @@ def correlation_chart(data):
     features["All alerts"] = data.counts.sum(axis=1)
     features["Days with alerts"] = data.queue.set_index("captain_id").observed_days
     names = list(features.columns)
+    # Pearson correlations compare weekly counts across captains. The "All alerts" total includes each type.
     pairs = features.corr().rename_axis("First").reset_index().melt(
         id_vars="First", var_name="Second", value_name="Correlation")
     matrix = alt.Chart(pairs).encode(

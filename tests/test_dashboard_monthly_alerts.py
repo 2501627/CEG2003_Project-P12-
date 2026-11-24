@@ -18,6 +18,7 @@ class DashboardMonthlyAlertsTest(unittest.TestCase):
             "training_records": [900, 100],
         })
         snapshot = SimpleNamespace(report={"alert_week_start": "2024-03-18"}, weights=weights)
+        # The dates straddle both month boundaries. Only the two March braking records count.
         alerts = pl.DataFrame({
             "alert_start": [datetime(2024, 2, 29), datetime(2024, 3, 1),
                             datetime(2024, 3, 31, 23, 59), datetime(2024, 4, 1)],

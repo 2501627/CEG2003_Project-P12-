@@ -22,6 +22,7 @@ class DashboardRocTest(unittest.TestCase):
             np.testing.assert_array_equal(curve.detection_rate, expected_y)
             aucs.append(roc_auc_score(part.reported_next_week, part.review_score))
 
+        # Vertical jumps have zero width, so keeping both ends should preserve the mean AUC.
         mean = roc_points(predictions)
         self.assertAlmostEqual(np.trapezoid(mean.detection_rate, mean.false_positive_rate), np.mean(aucs))
         self.assertEqual(mean.loc[mean.false_positive_rate == 0, "detection_rate"].tolist(), [0, .5])

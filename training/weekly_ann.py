@@ -64,6 +64,8 @@ def weekly_profiles(alerts, reports, start):
         pl.sum_horizontal([pl.col(COUNTS[TYPES.index(t)]) for t in types])
         for types in GROUPS.values()
     ]
+    # Each daily row has at least one alert. A day with no records gives us no driving exposure.
+    # Discount each type's count within a day before averaging, so a burst has diminishing influence.
     profiles = daily.group_by("captain_id").agg(
         pl.len().alias("observed_days"), pl.col("rows").sum().alias("alert_rows"),
         *[pl.col(c).mean().alias(rate) for c, rate in zip(COUNTS, RATES)],
@@ -71,6 +73,7 @@ def weekly_profiles(alerts, reports, start):
           for c, out in zip(COUNTS, DAILY_LOG)],
         *[(group > 0).mean().alias(share) for group, share in zip(daily_groups, GROUP_SHARES)])
     later = reports.filter(pl.col("accident_date").is_between(start + WEEK, start + 2*WEEK, closed="left"))
+    # Multiple eligible reports in the outcome week still give the captain a single positive label.
     labels = later["captain_id"].unique()
     result = (profiles.with_columns(pl.col("captain_id").is_in(labels.implode()).cast(pl.Int8).alias(TARGET),
                                     pl.lit(start).alias("alert_week_start"))
@@ -87,16 +90,19 @@ def train_scaled(inputs, y, epochs=EPOCHS):
     x = torch.tensor(inputs, dtype=torch.float32)
     if len(np.unique(y)) != 2:
         raise ValueError("Both label classes are required to train the network.")
+    # Give the two outcome classes equal total weight in the loss for this training set.
     weights = torch.tensor(compute_sample_weight("balanced", y), dtype=torch.float32)
     targets = torch.tensor(y, dtype=torch.float32)
     torch.manual_seed(SEED)
     network = CaptainANN(inputs.shape[1])
     optimizer = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    # The loss incorporates the sigmoid internally. Scoring applies it in CaptainANN.forward.
     criterion = nn.BCEWithLogitsLoss(weight=weights)
     layers = [layer for layer in network.logits if isinstance(layer, nn.Linear)]
     for _ in range(epochs):
         optimizer.zero_grad()
         loss = criterion(network.logits(x).squeeze(1), targets)
+        # Penalise large linear-layer weights relative to the number of training profiles.
         loss = loss + sum(layer.weight.square().sum() for layer in layers) / (2 * len(y))
         loss.backward()
         optimizer.step()

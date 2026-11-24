@@ -26,6 +26,7 @@ class MarchEvaluationTest(unittest.TestCase):
             "alert_start": [datetime(2024, 3, day) for day in [18, 25, 17, 24, 20, 21]],
             "alert_type": ["Harsh Braking"] * 6,
         }).lazy()
+        # March 25 and 31 belong to the outcome week. March 24 and April 1 fall outside it.
         reports = pl.DataFrame({
             "captain_id": [1, 2, 3, 4],
             "accident_date": [date(2024, 3, 25), date(2024, 3, 24), date(2024, 3, 31), date(2024, 4, 1)],

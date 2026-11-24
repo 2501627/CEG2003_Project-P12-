@@ -57,6 +57,7 @@ def load_snapshot(root=ROOT):
         raise ValueError("The saved alert and outcome weeks do not align.")
     day = pl.col("alert_start").dt.date()
     alerts = pl.scan_parquet(root / ALERTS)
+    # The totals table covers the whole month. The queue and each captain's detail use the alert week.
     alert_summary = summarize_month(alerts, start, weights)
     daily = (alerts
              .filter(day.is_between(start, end, closed="left"))
@@ -65,6 +66,7 @@ def load_snapshot(root=ROOT):
     counts = daily.groupby(["captain_id", "alert_type"]).records.sum().unstack(fill_value=0)
     days = daily.groupby("captain_id").day.nunique()
     ids = queue.captain_id
+    # Join by captain ID because the queue is rank-ordered and the count table is grouped by ID.
     if (not ids.is_unique or set(ids) != set(counts.index) or
             not predictions.captain_id.is_unique or set(ids) != set(predictions.captain_id) or
             not days.reindex(ids).eq(queue.set_index("captain_id").observed_days).all() or
