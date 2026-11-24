@@ -1,0 +1,37 @@
+{
+  "ratings": {
+    "roc_auc": 0.6332980707980708,
+    "accuracy": 0.7785900273790556
+  },
+  "evaluation": "Unweighted mean of five captain-disjoint fold ROC-AUCs and accuracies.",
+  "model": "Automatically frequency-weighted grouped March ANN",
+  "architecture": "64 PReLU -> 32 ReLU -> 16 ReLU -> 1 sigmoid",
+  "folds": 5,
+  "seed": 42,
+  "epochs": 100,
+  "cutoff": 0.5,
+  "evaluated_captains": 1490,
+  "incident_captains": 8,
+  "evaluation_flagged": 326,
+  "evaluation_incident_captains_flagged": 2,
+  "training_alert_week_starts": [
+    "2024-03-01",
+    "2024-03-08"
+  ],
+  "alert_week_start": "2024-03-18",
+  "outcome_week_start": "2024-03-25",
+  "review_model_fit": "All eligible earlier training profiles, with outcomes through March 21.",
+  "review_use": "Ranks captains for human review by next-week reported-incident score.",
+  "source_sha256": {
+    "march_2024_alerts.parquet": "d40a7a016e38b804237e60f072b4587d82a94ca68941b64b6523e67ec21f7650",
+    "march_2024_incidents.parquet": "aece93bb4612a0b2a13d3915e13daeeb50b6c791bafb0fe8c85e95d0f72a182e",
+    "weighted_weekly_ann.py": "b98e3629a82e28be0a76722a92c93714042fea08d5f0778b52e199ca6ad1ecfe",
+    "weekly_ann.py": "a25ac0b2ec17547f5a5af9fd2dc6f25c9c646da4df9eb626fb5a5bf3836fbba8"
+  },
+  "artifact_sha256": {
+    "weighted_ann.pt": "1cec8c748ddc6482e5f9a3a539821ea84b883dfe8cab52c9ac8b4a21ae0a1160",
+    "alert_weights.csv": "01aac964ce052186314bf5846fa9ca6e258a7e1829686500aafdef62d1c205ae",
+    "evaluation_predictions.csv": "160143ad43d94219b13cba417900bb728f1db23cf982c1395268f59eb363b5eb",
+    "march_25_31_review_list.csv": "ceb07430a02e8f1890dece420ff7d7202750f0f68ec8ff012e560d686aded6d4"
+  }
+}

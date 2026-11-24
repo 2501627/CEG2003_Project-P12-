@@ -1,0 +1,6 @@
+data/raw/*.xlsx filter=lfs diff=lfs merge=lfs -text
+data/processed/*.parquet binary
+outputs/final/*.pt binary
+# The saved model verifies the on-disk bytes of its training sources and CSVs.
+training/*.py text eol=lf
+outputs/final/*.csv text eol=crlf

@@ -1,0 +1,87 @@
+Captain Safety Lab
+Windows setup for VS Code
+
+1. Extract the ZIP and open the project
+
+   Right-click the ZIP in File Explorer and choose Extract All. In VS Code,
+   choose File > Open Folder. Open the folder containing README.md, dashboard,
+   training, data and outputs. Some ZIPs have an extra outer folder.
+
+   Check that these two cleaned files are present:
+
+       data\processed\march_2024_alerts.parquet
+       data\processed\march_2024_incidents.parquet
+
+   The code reads these files directly. If your ZIP contains only the raw Excel
+   workbooks, ask your teammate for the two cleaned files before continuing.
+
+2. Create a Python environment on your computer (once)
+
+   Install 64-bit Python 3.13 and the Microsoft Python extension for VS Code.
+   The project was tested with Python 3.13.7. Choose Terminal > New Terminal
+   in VS Code and use PowerShell. Run:
+
+       python --version
+
+   If it shows Python 3.13.x, run:
+
+       python -m venv .venv-local
+
+   If another Python version is shown and you have the Windows Python launcher,
+   use "py -3.13 -m venv .venv-local" instead. If neither command finds Python
+   3.13, install it, enable the installer option to add Python to PATH, then
+   reopen VS Code.
+
+   Use your new .venv-local even if the ZIP contains a .venv folder from another
+   computer. The commands below run its Python directly, so you can skip
+   activation and leave PowerShell's execution policy as it is.
+
+3. Install the packages (once, with an internet connection)
+
+       .\.venv-local\Scripts\python.exe -m pip install -r dashboard\requirements.txt
+
+   This installs both the dashboard and training packages. In VS Code, press
+   Ctrl+Shift+P, choose Python: Select Interpreter, then select
+   .venv-local\Scripts\python.exe. Use Enter interpreter path if needed.
+
+4. Run the model check
+
+       .\.venv-local\Scripts\python.exe -m training
+
+   With the supplied outputs\final folder, this verifies the saved model
+   files and recomputes the ratings from the saved evaluation predictions.
+   The expected terminal output is:
+
+       Mean five-fold ROC-AUC 0.6333 | Mean five-fold accuracy 77.86%
+
+   If outputs\final is absent, the same command trains the model using the two
+   cleaned files and creates the output folder. If the command reports missing
+   files or a mismatch in an existing outputs\final folder, re-extract a
+   complete copy of the project so the code, data and saved results match.
+
+5. Start the dashboard
+
+       .\.venv-local\Scripts\python.exe -m streamlit run dashboard\app.py
+
+   Open the local address printed in the terminal in your browser, usually
+   http://127.0.0.1:8501. Keep the terminal running while using the dashboard.
+   The address opens the dashboard on your own computer.
+
+   To confirm the supplied version loaded, look for 1,490 scored captains and
+   332 flagged in the review queue. Open Captain review to inspect a captain,
+   or Model & data to see the ROC curve, alert correlations and March totals.
+
+   Press Ctrl+C in the terminal to stop. Next time, open the same project folder
+   in VS Code and run just the dashboard command in step 5.
+
+Optional checks
+
+   Run the project's five automated tests:
+
+       .\.venv-local\Scripts\python.exe -m unittest discover -s tests -v
+
+   To train a separate copy from scratch, choose a new output folder:
+
+       .\.venv-local\Scripts\python.exe -m training --output outputs\reproduction
+
+   The dashboard reads outputs\final. Use step 5 to view the supplied results.
